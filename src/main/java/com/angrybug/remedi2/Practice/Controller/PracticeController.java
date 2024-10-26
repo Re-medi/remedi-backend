@@ -1,5 +1,8 @@
-package com.angrybug.remedi2.Practice;
+package com.angrybug.remedi2.Practice.Controller;
 
+import com.angrybug.remedi2.Practice.DTO.IdealAnswerDTO;
+import com.angrybug.remedi2.Practice.Service.PracticeService;
+import com.angrybug.remedi2.Practice.DTO.QuestionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,12 +37,5 @@ public class PracticeController {
     public QuestionDTO getQuestion(@RequestBody String requestBodyStr){
         return practiceService.createQuestion(requestBodyStr);
     }
-
-    //API4. [공통] - 실습 완료 시 결과 저장하기
-    @PostMapping("/practice/result")
-    public String saveResult(@RequestBody PracticeResult practiceResult){
-        return practiceService.saveResult(practiceResult);
-    }
-
 
 }
