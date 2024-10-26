@@ -1,5 +1,7 @@
-package com.angrybug.remedi2.Practice;
+package com.angrybug.remedi2.Practice.Service;
 
+import com.angrybug.remedi2.Practice.DTO.IdealAnswerDTO;
+import com.angrybug.remedi2.Practice.DTO.QuestionDTO;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -111,17 +113,6 @@ public class PracticeService {
         //-------------------
 
         return new QuestionDTO(question);
-    }
-
-    //API4.[공통] - 실습 완료 시 결과 저장하기
-    public String saveResult(PracticeResult practiceResult) {
-
-        //-------------------
-        //실습 결과 저장 로직 수행
-
-        //-------------------
-
-        return "200 OK";
     }
 
     private String extractAiQuestionFromJson(String requestBodyStr) {

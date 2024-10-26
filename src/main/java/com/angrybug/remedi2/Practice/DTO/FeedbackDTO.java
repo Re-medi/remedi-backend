@@ -1,4 +1,4 @@
-package com.angrybug.remedi2.Practice;
+package com.angrybug.remedi2.Practice.DTO;
 
 import lombok.Getter;
 import lombok.Setter;
