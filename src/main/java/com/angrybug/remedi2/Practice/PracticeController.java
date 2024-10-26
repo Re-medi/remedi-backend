@@ -19,7 +19,7 @@ public class PracticeController {
 
     //API1. [연습모드] - 채팅 피드백
     @PostMapping("/practice/feedback")
-    public FeedbackDTO getFeedback(@RequestBody String requestBodyStr){
+    public String getFeedback(@RequestBody String requestBodyStr){
         return practiceService.createFeedback(requestBodyStr);
     }
 
