@@ -1,8 +1,6 @@
 package com.angrybug.remedi2.Practice.Controller;
 
-import com.angrybug.remedi2.Practice.DTO.IdealAnswerDTO;
 import com.angrybug.remedi2.Practice.Service.PracticeService;
-import com.angrybug.remedi2.Practice.DTO.QuestionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,15 +24,9 @@ public class PracticeController {
         return practiceService.createFeedback(requestBodyStr);
     }
 
-    //API2. [연습모드] - 모범 답안 생성
-    @PostMapping("/practice/answer")
-    public IdealAnswerDTO getIdealAnswer(@RequestBody String requestBodyStr){
-        return practiceService.createAnswer(requestBodyStr);
-    }
-
-    //API3. [연습모드] - 질문 생성
-    @PostMapping("/practice/question")
-    public QuestionDTO getQuestion(@RequestBody String requestBodyStr){
+    //API2. [연습모드] - 질문 + 모범답안 생성
+    @PostMapping("/practice/qna")
+    public String getQuestion(@RequestBody String requestBodyStr){
         return practiceService.createQuestion(requestBodyStr);
     }
 

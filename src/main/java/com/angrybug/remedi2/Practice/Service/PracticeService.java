@@ -1,7 +1,5 @@
 package com.angrybug.remedi2.Practice.Service;
 
-import com.angrybug.remedi2.Practice.DTO.IdealAnswerDTO;
-import com.angrybug.remedi2.Practice.DTO.QuestionDTO;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -30,10 +28,10 @@ public class PracticeService {
                 .build();
     }
 
+    ObjectMapper objectMapper = new ObjectMapper();
+
     //API1. 연습모드 Feedback 생성함수
     public String createFeedback(String requestBodyStr) {
-
-        ObjectMapper objectMapper = new ObjectMapper();
         //feedback 생성 로직 수행
         // JSON 데이터 자체를 프롬프트에 포함하여 OpenAI에게 전달
         String prompt = "You are given the following JSON that contains information about a simulated medication guidance session. "
@@ -91,28 +89,60 @@ public class PracticeService {
         }
     }
 
-    //API2. 연습모드 모범 답안 생성 함수
-    public IdealAnswerDTO createAnswer(String requestBodyStr) {
-        //-------------------
-        //feedback 생성 로직 수행
+    //API2. 질문 + 모범답안 생성 (연습모드)
+    public String createQuestion(String requestBodyStr) {
+
+        String prompt = "Using the following JSON data with patient information and details about a specific part of a medication guidance session, "
+                + "generate a realistic follow-up question that the patient might ask, along with a concise, professional answer. "
+                + "Provide only one question-answer pair in this JSON format:\n"
+                + "{ \"question\": \"the patient's follow-up question in Korean\", \"ideal_answer\": \"the pharmacist's ideal answer in Korean\" }.\n"
+                + "Each question should address a unique concern and should not simply repeat standard instructions. "
+                + "In both the question and answer, DO NOT using medication names; when appropriate, use general terms like 'prescription' or 'medication' instead of specific descriptors (e.g., color or shape). "
+                + "Keep the answer clear and limited to 2-3 sentences."
+                + "Avoid overly translated expressions and ensure it reads smoothly in Korean.";
+
+        if (requestBodyStr.contains("\"part_number\": 3")) {
+            prompt += " For Part 3, consider patient concerns such as whether they can take it with other drinks, what to do if they miss a dose, when to take it if their meals are limited to lunch and dinner, or if they can stop taking it once they feel better. ";
+        } else if (requestBodyStr.contains("\"part_number\": 4")) {
+            prompt += " For Part 4, consider patient concerns about foods/activities to avoid, and suitable health supplements to take with the medication. Keep the tone calm and reassuring.";
+        }
+
+        // Append JSON data for context
+        prompt += " Here is the JSON data for this session:\n" + requestBodyStr;
 
 
-        String idealAnswer = "";
-        //-------------------
+        // message 생성
+        ObjectNode message = objectMapper.createObjectNode();
+        message.put("role", "user");
+        message.put("content", prompt); // 프롬프트 추가
 
-        return new IdealAnswerDTO(idealAnswer);
-    }
+        // 전체 요청 생성
+        ObjectNode requestBody = objectMapper.createObjectNode();
+        requestBody.put("model", "gpt-4");
+        requestBody.set("messages", objectMapper.createArrayNode().add(message));
 
-    //API3. 연습모드 질문 생성
-    public QuestionDTO createQuestion(String requestBodyStr) {
+        try {
+            // WebClient 요청
+            Mono<JsonNode> response = webClient.post()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(requestBody)  // 직렬화된 JSON 데이터 전송
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .doOnError(WebClientResponseException.class, e -> {
+                        // 상태 코드와 응답 본문 로그 출력
+                        System.err.println("Status Code: " + e.getStatusCode());
+                        System.err.println("Response Body: " + e.getResponseBodyAsString());
+                    })
+                    .onErrorReturn(JsonNodeFactory.instance.objectNode().put("error", "Error occurred during request."));
 
-        //-------------------
-        //question 생성 로직 수행
-        String question = "";
+            String question = response.block().path("choices").get(0).path("message").path("content").asText();
 
-        //-------------------
+            return question;
 
-        return new QuestionDTO(question);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error occurred during request.";
+        }
     }
 
     private String extractAiQuestionFromJson(String requestBodyStr) {
