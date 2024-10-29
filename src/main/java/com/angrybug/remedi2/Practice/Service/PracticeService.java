@@ -32,6 +32,11 @@ public class PracticeService {
 
     //API1. 연습모드 Feedback 생성함수
     public String createFeedback(String requestBodyStr) {
+
+        if(requestBodyStr == null){
+            return "Error occurred during request.";
+        }
+
         //feedback 생성 로직 수행
         // JSON 데이터 자체를 프롬프트에 포함하여 OpenAI에게 전달
         String prompt = "You are given the following JSON that contains information about a simulated medication guidance session. "
@@ -91,6 +96,10 @@ public class PracticeService {
 
     //API2. 질문 + 모범답안 생성 (연습모드)
     public String createQuestion(String requestBodyStr) {
+
+        if(requestBodyStr == null){
+            return "Error occurred during request.";
+        }
 
         String prompt = "Using the following JSON data with patient information and details about a specific part of a medication guidance session, "
                 + "generate a realistic follow-up question that the patient might ask, along with a concise, professional answer. "
