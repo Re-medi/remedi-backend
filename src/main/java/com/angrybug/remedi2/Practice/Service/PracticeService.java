@@ -37,24 +37,24 @@ public class PracticeService {
             return "Error occurred during request.";
         }
 
-        //feedback 생성 로직 수행
+        // feedback 생성 로직 수행
         // JSON 데이터 자체를 프롬프트에 포함하여 OpenAI에게 전달
         String prompt = "You are given the following JSON that contains information about a simulated medication guidance session. "
-                + "Your task is to compare the user's response with the ideal answer provided for the specified part of the guidance process. "
+                + "Your task is to compare the user's response with the ideal answer and specified part of the guidance process. "
                 + "If the user's answer includes the essential points of the guidance, consider it correct even if the wording differs from the ideal answer. "
-                + "Only mark the answer as incorrect if it omits critical information or includes serious errors related to dosage, frequency, or side effects. "
+                + "Only mark the answer as incorrect if it omits critical information or includes serious errors. "
                 + "If the user's answer is correct, return only this JSON: {\"feedback_code\": 0, \"feedback\": \"\"}. "
                 + "If the user's answer is incorrect, return only this JSON: {\"feedback_code\": 1, \"feedback\": \"explanation of the mistake in Korean\"}. "
+                + "The following are the part-specific guidelines: "
+                + "Part 2: Explain the medications, including their appearance and how they relate to the patient's condition.\n"
+                + "Part 3: Explain how the patient should take the medication, including the dosage frequency, method of taking, and duration.\n"
+                + "Part 4: Describe potential side effects of the medication and how to manage them if they occur.\n"
                 + "Please respond in valid JSON format and write the feedback explanation in Korean only, without any additional text."
                 + "The feedback should address the user as \"약사님\" and be written in a professional and natural tone, as if given by a senior pharmacist mentoring a junior pharmacist. Avoid overly translated expressions and ensure it reads smoothly in Korean."
                 + "The feedback should be clear and concise, limited to 2-3 sentences, focusing on core points without excessive detail or vagueness.";
 
         if (requestBodyStr.contains("\"ai_question\": \"\"")) {
-            prompt += " There is no specific question from the AI. Evaluate the user's response based on the part-specific guidance: "
-                    //+ "Part 1: Verify the patient's identity by asking their name and confirming their personal details.\n"
-                    + "Part 2: Explain the medications, including their appearance and how they relate to the patient's condition.\n"
-                    + "Part 3: Explain how the patient should take the medication, including the dosage frequency, method of taking, and duration.\n"
-                    + "Part 4: Describe potential side effects of the medication and how to manage them if they occur.\n";
+            prompt += " There is no specific question from the AI. Evaluate the user's response based on the part-specific guidance. ";
         } else {
             String aiQuestion = extractAiQuestionFromJson(requestBodyStr);
             prompt += " The question is: \"" + aiQuestion + "\". Please determine if the user's response correctly answers this question.";
