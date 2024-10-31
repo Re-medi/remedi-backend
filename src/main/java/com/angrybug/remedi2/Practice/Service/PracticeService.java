@@ -49,15 +49,18 @@ public class PracticeService {
                 + "Part 2: Explain the medications, including their appearance and how they relate to the patient's condition.\n"
                 + "Part 3: Explain how the patient should take the medication, including the dosage frequency, method of taking, and duration.\n"
                 + "Part 4: Describe potential side effects of the medication and how to manage them if they occur.\n"
+                + "Part 5: Focus on communication skills. Evaluate how well the user handled the patient's questions. \n"
                 + "Please respond in valid JSON format and write the feedback explanation in Korean only, without any additional text."
                 + "The feedback should address the user as \"약사님\" and be written in a professional and natural tone, as if given by a senior pharmacist mentoring a junior pharmacist. Avoid overly translated expressions and ensure it reads smoothly in Korean."
                 + "The feedback should be clear and concise, limited to 2-3 sentences, focusing on core points without excessive detail or vagueness.";
 
         if (requestBodyStr.contains("\"ai_question\": \"\"")) {
-            prompt += " There is no specific question from the AI. Evaluate the user's response based on the part-specific guidance. ";
+            prompt += " There is no specific question from the patient. Evaluate the user's response based on the part-specific guidance. ";
         } else {
             String aiQuestion = extractAiQuestionFromJson(requestBodyStr);
-            prompt += " The question is: \"" + aiQuestion + "\". Please determine if the user's response correctly answers this question.";
+            prompt += " The question is: \"" + aiQuestion + "\". Please determine if the user's response correctly answers this question."
+                    + "Do not focus on matching the ideal answer precisely, but instead assess if the user responded flexibly and appropriately to the patient's concerns. "
+                    + "If the response is adaptable and suitable for the patient's needs, consider it correct.";
         }
 
         // JSON 데이터 추가
