@@ -74,9 +74,52 @@ public class ChallengeService {
                     })
                     .onErrorReturn(JsonNodeFactory.instance.objectNode().put("error", "Error occurred during request."));
 
-            String question = response.block().path("choices").get(0).path("message").path("content").asText();
+            return response.block().path("choices").get(0).path("message").path("content").asText();
 
-            return question;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error occurred during request.";
+        }
+    }
+
+    public String createOverview(String requestBodyStr) {
+
+        if(requestBodyStr == null){
+            return "Error occurred during request.";
+        }
+
+        String prompt = "Please generate an overall evaluation based on the provided data, which includes the patient’s information, prescription details, and the full conversation record between the pharmacist and the patient. The conversation contains the pharmacist’s instructions and responses to the patient’s questions. Assess the pharmacist’s clarity and responsiveness, noting strengths and areas for improvement in guiding the patient on medication use. Take into account how well the guidance was tailored to the patient’s age, gender, diagnosis, personality traits, and specific prescription details.\n"
+                + "Identify parts where the pharmacist communicated effectively and any areas where additional clarification might benefit the patient. The evaluation should be written as a single paragraph in natural, professional Korean, addressing the pharmacist as ‘약사님’. Return the feedback in the following format:"
+                + "{\n"
+                + "\"overview\" : \"<insert your evaluation here>\"\n"
+                + "}\n"
+                + "The conversation record is as follows:\n" +requestBodyStr;
+
+        // message 생성
+        ObjectNode message = objectMapper.createObjectNode();
+        message.put("role", "user");
+        message.put("content", prompt); // 프롬프트 추가
+
+        // 전체 요청 생성
+        ObjectNode requestBody = objectMapper.createObjectNode();
+        requestBody.put("model", "gpt-4");
+        requestBody.set("messages", objectMapper.createArrayNode().add(message));
+
+        try {
+            // WebClient 요청
+            Mono<JsonNode> response = webClient.post()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(requestBody)  // 직렬화된 JSON 데이터 전송
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .doOnError(WebClientResponseException.class, e -> {
+                        // 상태 코드와 응답 본문 로그 출력
+                        System.err.println("Status Code: " + e.getStatusCode());
+                        System.err.println("Response Body: " + e.getResponseBodyAsString());
+                    })
+                    .onErrorReturn(JsonNodeFactory.instance.objectNode().put("error", "Error occurred during request."));
+
+            return response.block().path("choices").get(0).path("message").path("content").asText();
 
         } catch (Exception e) {
             e.printStackTrace();
