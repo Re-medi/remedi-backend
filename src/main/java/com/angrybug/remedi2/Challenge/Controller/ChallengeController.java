@@ -23,4 +23,10 @@ public class ChallengeController {
     public String getOverview(@RequestBody String requestBodyStr){
         return challengeService.createOverview(requestBodyStr);
     }
+
+    //API7. [평가] - 시뮬레이션 총평 생성
+    @PostMapping("/challenge/score")
+    public String getScore(@RequestBody String requestBodyStr){
+        return challengeService.createScore(requestBodyStr);
+    }
 }
