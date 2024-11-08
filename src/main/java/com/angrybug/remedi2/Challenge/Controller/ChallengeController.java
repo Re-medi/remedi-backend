@@ -17,4 +17,16 @@ public class ChallengeController {
     public String getPracticalQnA(@RequestBody String requestBodyStr){
         return challengeService.createConversation(requestBodyStr);
     }
+
+    //API6. [평가] - 시뮬레이션 총평 생성
+    @PostMapping("/challenge/overview")
+    public String getOverview(@RequestBody String requestBodyStr){
+        return challengeService.createOverview(requestBodyStr);
+    }
+
+    //API7. [평가] - 시뮬레이션 총평 생성
+    @PostMapping("/challenge/score")
+    public String getScore(@RequestBody String requestBodyStr){
+        return challengeService.createScore(requestBodyStr);
+    }
 }
