@@ -1,10 +1,16 @@
 package com.angrybug.remedi2.Challenge.Service;
 
+import com.angrybug.remedi2.Challenge.DTO.ScoreDTO;
+import com.angrybug.remedi2.Challenge.Model.Score;
+import com.angrybug.remedi2.Challenge.Repository.ChallengeRepository;
+import com.angrybug.remedi2.DataBackup.Model.Result;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -12,8 +18,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 @Service
 public class ChallengeService {
+
+    @Autowired
+    ChallengeRepository challengeRepository;
 
     @Value("${openai.api.key}")
     private String openaiApiKey;
@@ -82,7 +93,14 @@ public class ChallengeService {
         }
     }
 
-    public String createScore(String requestBodyStr) {
+    public String createScore(ScoreDTO scoreDTO) throws Exception {
+
+        Integer userId = scoreDTO.getId();
+        Map<String,Object> requestBodyStr = scoreDTO.getText();
+
+        System.out.println(requestBodyStr);
+
+        //---------------------------------
 
         if(requestBodyStr == null){
             return "Error occurred during request.";
@@ -156,7 +174,18 @@ public class ChallengeService {
                     })
                     .onErrorReturn(JsonNodeFactory.instance.objectNode().put("error", "Error occurred during request."));
 
-            return response.block().path("choices").get(0).path("message").path("content").asText();
+            String text = response.block().path("choices").get(0).path("message").path("content").asText();
+
+            //-------------------
+
+            Score score = new Score();
+
+            score.setUserId(userId);
+            score.setScoreDetail(text);
+
+            challengeRepository.save(score);
+
+            return text;
 
         } catch (Exception e) {
             e.printStackTrace();
