@@ -200,12 +200,25 @@ public class ChallengeService {
             return "Error occurred during request.";
         }
 
-        String prompt = "Please generate an overall evaluation based on the provided data, which includes the patient’s information, prescription details, and the full conversation record between the pharmacist and the patient. The conversation contains the pharmacist’s instructions and responses to the patient’s questions. Assess the pharmacist’s clarity and responsiveness, noting strengths and areas for improvement in guiding the patient on medication use. Take into account how well the guidance was tailored to the patient’s age, gender, diagnosis, personality traits, and specific prescription details.\n"
-                + "Identify parts where the pharmacist communicated effectively and any areas where additional clarification might benefit the patient. The evaluation should be written as a single paragraph in natural, professional Korean, addressing the pharmacist as ‘약사님’. Return the feedback in the following format:"
+        String prompt = "Please generate an overall evaluation based on the provided data, which includes the patient’s information, prescription details, conversation record, and performance scores. The scores reflect the user's simulated interaction in a medication guidance session with the virtual patient.\n"
+                + "Assess the pharmacist’s performance using the following evaluation criteria:\n"
+                + "- Part Scores: Evaluate each of the four parts based on the provided scores:\n"
+                + "  * Part 1: Verification of patient’s name and personal details.\n"
+                + "  * Part 2: Explanation of medications, their appearance, and relevance to the patient’s condition.\n"
+                + "  * Part 3: Instructions for medication intake, including dosage frequency, method, and duration.\n"
+                + "  * Part 4: Description of potential side effects and how to manage them.\n"
+                + "- Additional Criteria: Assess clarity, relevance, consistency, and delivery based on the scores provided.\n\n"
+                + "The overall evaluation should:\n"
+                + "1. Highlight the pharmacist’s strengths, noting areas where the guidance was clear and effective.\n"
+                + "2. Identify any parts where additional clarification or improvement could benefit the patient.\n"
+                + "3. Reflect how well the guidance was tailored to the patient’s specific details, including age, gender, diagnosis, personality traits, and prescription.\n"
+                + "4. Be concise and written within 3 sentences, maintaining a natural, professional tone in Korean, addressing the pharmacist as ‘약사님’.\n"
+                + "Return the feedback in the following format:\n"
                 + "{\n"
-                + "\"overview\" : \"<insert your evaluation here>\"\n"
-                + "}\n"
-                + "The conversation record is as follows:\n" +requestBodyStr;
+                + "\"overview\" : \"<insert your concise evaluation here>\"\n"
+                + "}\n\n"
+                + "The provided data is as follows:\n"
+                + requestBodyStr;
 
         // message 생성
         ObjectNode message = objectMapper.createObjectNode();
