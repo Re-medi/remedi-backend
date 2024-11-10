@@ -19,12 +19,13 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class ChallengeService {
 
     @Autowired
-    ChallengeRepository challengeRepository;
+    private ChallengeRepository challengeRepository;
 
     @Value("${openai.api.key}")
     private String openaiApiKey;
@@ -95,7 +96,7 @@ public class ChallengeService {
 
     public String createScore(ScoreDTO scoreDTO) throws Exception {
 
-        Integer userId = scoreDTO.getId();
+        UUID userId = scoreDTO.getId();
         Map<String,Object> requestBodyStr = scoreDTO.getText();
 
         System.out.println(requestBodyStr);

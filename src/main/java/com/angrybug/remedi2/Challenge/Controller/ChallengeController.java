@@ -15,7 +15,7 @@ import java.util.Map;
 public class ChallengeController {
 
     @Autowired
-    ChallengeService challengeService;
+    private ChallengeService challengeService;
 
     //API3. [실전모드] - 질문 + 모범답안 생성
     @PostMapping("/challenge/qna")
