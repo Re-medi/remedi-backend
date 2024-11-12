@@ -73,15 +73,21 @@ public class PracticeService {
         // JSON 데이터 추가
         prompt += " Here is the JSON data for this session:\n" + requestBodyStr;
 
-        // message 생성
-        ObjectNode message = objectMapper.createObjectNode();
-        message.put("role", "user");
-        message.put("content", prompt); // 프롬프트 추가
+        // ObjectMapper 사용
+        ObjectNode systemMessage = objectMapper.createObjectNode();
+        systemMessage.put("role", "system");
+        systemMessage.put("content", "Please ensure that the output is always a valid JSON object. The response must be in strict JSON format.");
+
+        // 사용자 메시지 생성
+        ObjectNode userMessage = objectMapper.createObjectNode();
+        userMessage.put("role", "user");
+        userMessage.put("content", prompt); // 프롬프트 추가
 
         // 전체 요청 생성
         ObjectNode requestBody = objectMapper.createObjectNode();
-        requestBody.put("model", "gpt-4");
-        requestBody.set("messages", objectMapper.createArrayNode().add(message));
+        requestBody.put("model", "gpt-4o-mini");
+        requestBody.set("messages", objectMapper.createArrayNode().add(systemMessage).add(userMessage));
+        requestBody.putObject("response_format").put("type", "json_object");
 
         try {
             // WebClient 요청
@@ -151,15 +157,21 @@ public class PracticeService {
         prompt += " Here is the JSON data for this session:\n" + requestBodyStr;
 
 
-        // message 생성
-        ObjectNode message = objectMapper.createObjectNode();
-        message.put("role", "user");
-        message.put("content", prompt); // 프롬프트 추가
+        // ObjectMapper 사용
+        ObjectNode systemMessage = objectMapper.createObjectNode();
+        systemMessage.put("role", "system");
+        systemMessage.put("content", "Please ensure that the output is always a valid JSON object. The response must be in strict JSON format.");
+
+        // 사용자 메시지 생성
+        ObjectNode userMessage = objectMapper.createObjectNode();
+        userMessage.put("role", "user");
+        userMessage.put("content", prompt); // 프롬프트 추가
 
         // 전체 요청 생성
         ObjectNode requestBody = objectMapper.createObjectNode();
-        requestBody.put("model", "gpt-4");
-        requestBody.set("messages", objectMapper.createArrayNode().add(message));
+        requestBody.put("model", "gpt-4o-mini");
+        requestBody.set("messages", objectMapper.createArrayNode().add(systemMessage).add(userMessage));
+        requestBody.putObject("response_format").put("type", "json_object");
 
         try {
             // WebClient 요청
