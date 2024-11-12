@@ -3,8 +3,7 @@ package com.angrybug.remedi2.Challenge.Service;
 import com.angrybug.remedi2.Challenge.DTO.ScoreDTO;
 import com.angrybug.remedi2.Challenge.Model.Score;
 import com.angrybug.remedi2.Challenge.Repository.ChallengeRepository;
-import com.angrybug.remedi2.DataBackup.Model.Result;
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -19,9 +18,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
+import java.io.File;
+import java.io.IOException;
 
 @Slf4j
 @Service
@@ -62,8 +63,7 @@ public class ChallengeService {
                 "  \"question\": \"환자의 질문\",\n" +
                 "  \"ideal_answer\": \"약사의 모범답안\"\n" +
                 "}\n\n" +
-                "Use natural, professional language in Korean. Ensure the patient's question realistically reflects their character type and previous conversation. Consider the conversational flow in the 'conversation' field of the JSON, where 'pharmacist' responses are derived from a simulated medication guidance session converted from voice to text via STT. Reflect the patient's character type in the generated question, aligning it with their behavior traits.\n\n" +
-                "The pharmacist's answer should be concise, no longer than 2 sentences, addressing the question directly and professionally, and aligned with the provided context and prescription details.\n\n" +
+                "Use natural, professional language in Korean. Ensure the patient's question realistically reflects their character type and previous conversation, while the pharmacist's answer concise, no longer than 2 sentences, focusing directly on the patient's concern.\n\n" +
                 "Here is the JSON data for this session:\n" + requestBodyStr;
 
         // message 생성
@@ -131,10 +131,10 @@ public class ChallengeService {
                 + "   - **Part 3**: Did the pharmacist explain how the patient should take the medications, including dosage frequency, method, and duration? (15 points)\n"
                 + "   - **Part 4**: Did the pharmacist describe the potential side effects of the medications and how to manage them if they occur? (15 points)\n\n"
                 + "2. **Additional Criteria**: Evaluate based on the following criteria:\n"
-                + "   - **Clarity**: Was the information clearly and precisely delivered in a way the patient could easily understand? Consider cases where pronunciation errors or transcription issues might have affected clarity. (10 points)\n"
+                + "   - **Clarity**: Was the information clearly and precisely delivered in a way the patient could easily understand? (10 points)\n"
                 + "   - **Relevance**: Was the information appropriate to the patient’s condition and needs? Did the pharmacist avoid unnecessary details? (10 points)\n"
                 + "   - **Consistency**: Was the terminology and phrasing consistent throughout the guidance? (10 points)\n"
-                + "   - **Delivery**: Was the delivery speed appropriate, neither too fast nor too slow, based on the timing data provided? Additionally, evaluate whether pronunciation or transcription issues influenced the effective delivery of the information. (10 points)\n\n"
+                + "   - **Delivery**: Was the delivery speed appropriate, neither too fast nor too slow, based on the timing data provided? (10 points)\n\n"
                 + "### Output Format\n"
                 + "Return the evaluation result strictly in the following JSON format:\n"
                 + "{\n"
@@ -192,13 +192,17 @@ public class ChallengeService {
             String text = response.block().path("choices").get(0).path("message").path("content").asText();
 
             //-------------------
+            // score 결과 저장 로직
 
             Score score = new Score();
 
             score.setUserId(userId);
             score.setScoreDetail(text);
 
-            challengeRepository.save(score);
+            Score savedScore = challengeRepository.save(score); //DB에 저장
+            saveLocalScoreDetail(savedScore); //local 파일에 저장
+
+            //---------------------
 
             return text;
 
@@ -271,12 +275,32 @@ public class ChallengeService {
             return "Error occurred during request.";
         }
     }
+
+    // 로컬에 Score Detail을 Json으로 저장
+    public void saveLocalScoreDetail(Score savedScore) {
+
+        // 데이터를 Map으로 구성하여 JSON 형식으로 변환
+        Map<String, Object> data = new HashMap<>();
+        data.put("scoreId", savedScore.getScoreId());
+        data.put("userId", savedScore.getUserId());
+        data.put("scoreDetail", savedScore.getScoreDetail());
+
+        // ObjectMapper를 사용하여 JSON 파일로 저장
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String fileName = "scoreDetail----"+savedScore.getUserId() + "----" + savedScore.getScoreId() + ".json";
+
+        String path = "../../../../../backupData/" + fileName;
+
+        try {
+            objectMapper.writeValue(new File(path), data);
+            log.info("{}이 성공적으로 저장되었습니다.", fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
 
 
-// 로컬에 Score Detail을 Json으로 저장
-//    public String saveLocalScoreDetail(String requestBodyStr) {
-//
-//
-//    }
 
