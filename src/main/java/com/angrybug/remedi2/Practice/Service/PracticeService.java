@@ -210,14 +210,14 @@ public class PracticeService {
     }
 
     private String extractTextInBraces(String parsedContentStr) {
-        Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
+        Pattern pattern = Pattern.compile("\\{.*\\}", Pattern.DOTALL); // 중첩 포함, 여러 줄 허용
         Matcher matcher = pattern.matcher(parsedContentStr);
 
-        // 중괄호 내부 문자열을 찾으면 반환
+        // 중괄호로 둘러싸인 JSON 전체 반환
         if (matcher.find()) {
-            return matcher.group(0);  // 중괄호 포함
+            return matcher.group(0);  // 중괄호 포함 전체 반환
         } else {
-            return null;  // 중괄호가 없을 경우
+            throw new IllegalArgumentException("No valid JSON braces found in the content");
         }
     }
 

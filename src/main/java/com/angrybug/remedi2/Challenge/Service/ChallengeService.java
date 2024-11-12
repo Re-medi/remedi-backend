@@ -19,6 +19,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -206,7 +209,7 @@ public class ChallengeService {
 
             //----------------------------------------
             log.info(String.valueOf(response));
-            log.info(String.valueOf(response.block()));
+//            log.info(String.valueOf(response.block()));
             //----------------------------------------
 
             String content = response.block().path("choices").get(0).path("message").path("content").asText();
@@ -233,7 +236,7 @@ public class ChallengeService {
                 score.setScoreDetail(parsedContentStr);
 
                 Score savedScore = challengeRepository.save(score); //DB에 저장
-                saveLocalScoreDetail(savedScore); //local 파일에 저장
+//                saveLocalScoreDetail(savedScore); //local 파일에 저장
 
                 //---------------------
 
@@ -344,15 +347,20 @@ public class ChallengeService {
         data.put("userId", savedScore.getUserId());
         data.put("scoreDetail", savedScore.getScoreDetail());
 
-        // ObjectMapper를 사용하여 JSON 파일로 저장
-        ObjectMapper objectMapper = new ObjectMapper();
+        String fileName = "scoreDetail----" + savedScore.getScoreId() + ".json";
 
-        String fileName = "scoreDetail----"+savedScore.getUserId() + "----" + savedScore.getScoreId() + ".json";
-
-        String path = "../../../../../backupData/" + fileName;
+        String directoryPath = "../../../../../backupData/";
+        String filePath = directoryPath + fileName;
 
         try {
-            objectMapper.writeValue(new File(path), data);
+            // 디렉토리가 존재하지 않으면 생성
+            Path dirPath = Paths.get(directoryPath);
+            if (Files.notExists(dirPath)) {
+                Files.createDirectories(dirPath);  // 디렉토리를 먼저 생성
+            }
+
+            // JSON 파일로 저장
+            objectMapper.writeValue(new File(filePath), data);
             log.info("{}이 성공적으로 저장되었습니다.", fileName);
         } catch (IOException e) {
             e.printStackTrace();
@@ -360,14 +368,14 @@ public class ChallengeService {
     }
 
     private String extractTextInBraces(String parsedContentStr) {
-        Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
+        Pattern pattern = Pattern.compile("\\{.*\\}", Pattern.DOTALL); // 중첩 포함, 여러 줄 허용
         Matcher matcher = pattern.matcher(parsedContentStr);
 
-        // 중괄호 내부 문자열을 찾으면 반환
+        // 중괄호로 둘러싸인 JSON 전체 반환
         if (matcher.find()) {
-            return matcher.group(0);  // 중괄호 포함
+            return matcher.group(0);  // 중괄호 포함 전체 반환
         } else {
-            return null;  // 중괄호가 없을 경우
+            throw new IllegalArgumentException("No valid JSON braces found in the content");
         }
     }
 
