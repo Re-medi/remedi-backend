@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -21,6 +22,8 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 import java.util.UUID;
 
+
+@Slf4j
 @Service
 public class ChallengeService {
 
@@ -45,7 +48,7 @@ public class ChallengeService {
     //API3. 질문 + 모범답안 생성 (실전 모드)
     public String createConversation(String requestBodyStr) {
 
-        if(requestBodyStr == null){
+        if (requestBodyStr == null) {
             return "Error occurred during request.";
         }
 
@@ -86,6 +89,10 @@ public class ChallengeService {
                     })
                     .onErrorReturn(JsonNodeFactory.instance.objectNode().put("error", "Error occurred during request."));
 
+
+
+
+
             return response.block().path("choices").get(0).path("message").path("content").asText();
 
         } catch (Exception e) {
@@ -97,13 +104,11 @@ public class ChallengeService {
     public String createScore(ScoreDTO scoreDTO) throws Exception {
 
         UUID userId = scoreDTO.getId();
-        Map<String,Object> requestBodyStr = scoreDTO.getText();
-
-        System.out.println(requestBodyStr);
+        Map<String, Object> requestBodyStr = scoreDTO.getText();
 
         //---------------------------------
 
-        if(requestBodyStr == null){
+        if (requestBodyStr == null) {
             return "Error occurred during request.";
         }
 
@@ -175,6 +180,14 @@ public class ChallengeService {
                     })
                     .onErrorReturn(JsonNodeFactory.instance.objectNode().put("error", "Error occurred during request."));
 
+
+            //----------------------------------------
+            log.info(String.valueOf(response));
+            log.info(String.valueOf(response.block()));
+            //----------------------------------------
+
+
+
             String text = response.block().path("choices").get(0).path("message").path("content").asText();
 
             //-------------------
@@ -196,7 +209,7 @@ public class ChallengeService {
 
     public String createOverview(String requestBodyStr) {
 
-        if(requestBodyStr == null){
+        if (requestBodyStr == null) {
             return "Error occurred during request.";
         }
 
@@ -244,6 +257,12 @@ public class ChallengeService {
                     })
                     .onErrorReturn(JsonNodeFactory.instance.objectNode().put("error", "Error occurred during request."));
 
+            //----------------------------------------
+            log.info(String.valueOf(response));
+            log.info(String.valueOf(response.block()));
+            //----------------------------------------
+
+
             return response.block().path("choices").get(0).path("message").path("content").asText();
 
         } catch (Exception e) {
@@ -252,3 +271,10 @@ public class ChallengeService {
         }
     }
 }
+
+
+    // 로컬에 Score Detail을 Json으로 저장
+//    public String saveLocalScoreDetail(String requestBodyStr) {
+//
+//
+//    }
