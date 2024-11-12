@@ -18,7 +18,7 @@ public class Score {
     @Column(name = "score_id")
     private Integer scoreId;
 
-    @Column(name = "user_id", nullable = false, unique = true, columnDefinition = "VARCHAR(36)")
+    @Column(name = "user_id", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID userId;
 
     @Column(name = "score_detail", nullable = false, columnDefinition = "TEXT")

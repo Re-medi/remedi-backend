@@ -3,8 +3,7 @@ package com.angrybug.remedi2.Challenge.Service;
 import com.angrybug.remedi2.Challenge.DTO.ScoreDTO;
 import com.angrybug.remedi2.Challenge.Model.Score;
 import com.angrybug.remedi2.Challenge.Repository.ChallengeRepository;
-import com.angrybug.remedi2.DataBackup.Model.Result;
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -19,9 +18,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
+import java.io.File;
+import java.io.IOException;
 
 @Slf4j
 @Service
@@ -191,13 +192,17 @@ public class ChallengeService {
             String text = response.block().path("choices").get(0).path("message").path("content").asText();
 
             //-------------------
+            // score 결과 저장 로직
 
             Score score = new Score();
 
             score.setUserId(userId);
             score.setScoreDetail(text);
 
-            challengeRepository.save(score);
+            Score savedScore = challengeRepository.save(score); //DB에 저장
+            saveLocalScoreDetail(savedScore); //local 파일에 저장
+
+            //---------------------
 
             return text;
 
@@ -270,11 +275,32 @@ public class ChallengeService {
             return "Error occurred during request.";
         }
     }
+
+    // 로컬에 Score Detail을 Json으로 저장
+    public void saveLocalScoreDetail(Score savedScore) {
+
+        // 데이터를 Map으로 구성하여 JSON 형식으로 변환
+        Map<String, Object> data = new HashMap<>();
+        data.put("scoreId", savedScore.getScoreId());
+        data.put("userId", savedScore.getUserId());
+        data.put("scoreDetail", savedScore.getScoreDetail());
+
+        // ObjectMapper를 사용하여 JSON 파일로 저장
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String fileName = "scoreDetail----"+savedScore.getUserId() + "----" + savedScore.getScoreId() + ".json";
+
+        String path = "../../../../../backupData/" + fileName;
+
+        try {
+            objectMapper.writeValue(new File(path), data);
+            log.info("{}이 성공적으로 저장되었습니다.", fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
 
 
-    // 로컬에 Score Detail을 Json으로 저장
-//    public String saveLocalScoreDetail(String requestBodyStr) {
-//
-//
-//    }
+

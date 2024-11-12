@@ -1,5 +1,6 @@
 package com.angrybug.remedi2.Practice.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -11,6 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class PracticeService {
@@ -90,14 +94,50 @@ public class PracticeService {
                     })
                     .onErrorReturn(JsonNodeFactory.instance.objectNode().put("error", "Error occurred during request."));
 
-            String feedback = response.block().path("choices").get(0).path("message").path("content").asText();
-            return feedback;
+            String content = response.block().path("choices").get(0).path("message").path("content").asText();
+
+            // content를 JSON으로 파싱 및 검증
+            try {
+
+                // 1. 이상한 문자가 json 앞 뒤에 추가되는 것 파싱
+                // 2. 개행문자 제거 파싱
+
+                String contentStr = content;
+                if(contentStr.charAt(0) != '{') {
+                    contentStr = extractTextInBraces(contentStr);
+                }
+                JsonNode parsedContent = objectMapper.readTree(contentStr);
+                String parsedContentStr = parsedContent.toString();
+
+
+                // 검증 성공 시 content 반환
+                return parsedContentStr;
+
+            } catch (JsonProcessingException e) {
+                throw new IllegalArgumentException("Content is not a valid JSON", e);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
             return "Error occurred during request.";
         }
     }
+
+    private String extractTextInBraces(String parsedContentStr) {
+        Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
+        Matcher matcher = pattern.matcher(parsedContentStr);
+
+        // 중괄호 내부 문자열을 찾으면 반환
+        if (matcher.find()) {
+            return matcher.group(0);  // 중괄호 포함
+        } else {
+            return null;  // 중괄호가 없을 경우
+        }
+
+    }
+
+
+
 
     //API2. 질문 + 모범답안 생성 (연습모드)
     public String createQuestion(String requestBodyStr) {
