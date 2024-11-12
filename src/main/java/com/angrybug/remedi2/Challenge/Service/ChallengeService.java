@@ -4,6 +4,7 @@ import com.angrybug.remedi2.Challenge.DTO.ScoreDTO;
 import com.angrybug.remedi2.Challenge.Model.Score;
 import com.angrybug.remedi2.Challenge.Repository.ChallengeRepository;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -23,6 +24,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.io.File;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -92,10 +95,28 @@ public class ChallengeService {
                     .onErrorReturn(JsonNodeFactory.instance.objectNode().put("error", "Error occurred during request."));
 
 
+            String content = response.block().path("choices").get(0).path("message").path("content").asText();
 
+            // content를 JSON으로 파싱 및 검증
+            try {
 
+                // 1. 이상한 문자가 json 앞 뒤에 추가되는 것 파싱
+                // 2. 개행문자 제거 파싱
 
-            return response.block().path("choices").get(0).path("message").path("content").asText();
+                String contentStr = content;
+                if(contentStr.charAt(0) != '{') {
+                    contentStr = extractTextInBraces(contentStr);
+                }
+                JsonNode parsedContent = objectMapper.readTree(contentStr);
+                String parsedContentStr = parsedContent.toString();
+
+                // 검증 성공 시 content 반환
+                return parsedContentStr;
+
+            } catch (JsonProcessingException e) {
+                throw new IllegalArgumentException("Content is not a valid JSON", e);
+            }
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -188,24 +209,41 @@ public class ChallengeService {
             log.info(String.valueOf(response.block()));
             //----------------------------------------
 
+            String content = response.block().path("choices").get(0).path("message").path("content").asText();
 
+            // content를 JSON으로 파싱 및 검증
+            try {
 
-            String text = response.block().path("choices").get(0).path("message").path("content").asText();
+                // 1. 이상한 문자가 json 앞 뒤에 추가되는 것 파싱
+                // 2. 개행문자 제거 파싱
 
-            //-------------------
-            // score 결과 저장 로직
+                String contentStr = content;
+                if(contentStr.charAt(0) != '{') {
+                    contentStr = extractTextInBraces(contentStr);
+                }
+                JsonNode parsedContent = objectMapper.readTree(contentStr);
+                String parsedContentStr = parsedContent.toString();
 
-            Score score = new Score();
+                //-------------------
+                // score 결과 저장 로직
 
-            score.setUserId(userId);
-            score.setScoreDetail(text);
+                Score score = new Score();
 
-            Score savedScore = challengeRepository.save(score); //DB에 저장
-            saveLocalScoreDetail(savedScore); //local 파일에 저장
+                score.setUserId(userId);
+                score.setScoreDetail(parsedContentStr);
 
-            //---------------------
+                Score savedScore = challengeRepository.save(score); //DB에 저장
+                saveLocalScoreDetail(savedScore); //local 파일에 저장
 
-            return text;
+                //---------------------
+
+                // 검증 성공 시 content 반환
+                return parsedContentStr;
+
+            } catch (JsonProcessingException e) {
+                throw new IllegalArgumentException("Content is not a valid JSON", e);
+            }
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -269,7 +307,27 @@ public class ChallengeService {
             //----------------------------------------
 
 
-            return response.block().path("choices").get(0).path("message").path("content").asText();
+            String content = response.block().path("choices").get(0).path("message").path("content").asText();
+
+            // content를 JSON으로 파싱 및 검증
+            try {
+
+                // 1. 이상한 문자가 json 앞 뒤에 추가되는 것 파싱
+                // 2. 개행문자 제거 파싱
+
+                String contentStr = content;
+                if(contentStr.charAt(0) != '{') {
+                    contentStr = extractTextInBraces(contentStr);
+                }
+                JsonNode parsedContent = objectMapper.readTree(contentStr);
+                String parsedContentStr = parsedContent.toString();
+
+                // 검증 성공 시 content 반환
+                return parsedContentStr;
+
+            } catch (JsonProcessingException e) {
+                throw new IllegalArgumentException("Content is not a valid JSON", e);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -298,6 +356,18 @@ public class ChallengeService {
             log.info("{}이 성공적으로 저장되었습니다.", fileName);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private String extractTextInBraces(String parsedContentStr) {
+        Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
+        Matcher matcher = pattern.matcher(parsedContentStr);
+
+        // 중괄호 내부 문자열을 찾으면 반환
+        if (matcher.find()) {
+            return matcher.group(0);  // 중괄호 포함
+        } else {
+            return null;  // 중괄호가 없을 경우
         }
     }
 
