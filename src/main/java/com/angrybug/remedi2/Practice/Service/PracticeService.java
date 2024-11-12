@@ -1,6 +1,5 @@
 package com.angrybug.remedi2.Practice.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -12,9 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class PracticeService {
@@ -47,6 +43,9 @@ public class PracticeService {
                 + "Your task is to compare the user's response with the ideal answer and specified part of the guidance process. "
                 + "If the user's answer includes the essential points of the guidance, consider it correct even if the wording differs from the ideal answer. "
                 + "Only mark the answer as incorrect if it omits critical information or includes serious errors. "
+                + "Please note that the 'user_talk' field contains text transcribed through speech-to-text (STT) recognition. "
+                + "Because this text is generated from voice input, it may include minor errors such as mispronunciations, incorrect word choices, or grammatical issues. "
+                + "When evaluating the response, focus on the meaning and intent rather than penalizing minor inaccuracies, unless they lead to significant misunderstandings or critical errors. "
                 + "If the user's answer is correct, return only this JSON: {\"feedback_code\": 0, \"feedback\": \"\"}. "
                 + "If the user's answer is incorrect, return only this JSON: {\"feedback_code\": 1, \"feedback\": \"explanation of the mistake in Korean\"}. "
                 + "The following are the part-specific guidelines: "
@@ -62,7 +61,7 @@ public class PracticeService {
             prompt += " There is no specific question from the patient. Evaluate the user's response based on the part-specific guidance. ";
         } else {
             String aiQuestion = extractAiQuestionFromJson(requestBodyStr);
-            prompt += " The question is: \"" + aiQuestion + "\". Please determine if the user's response correctly answers this question."
+            prompt += " The question is: \"" + aiQuestion + "\". Please determine if the user's response correctly answers this question. "
                     + "Do not focus on matching the ideal answer precisely, but instead assess if the user responded flexibly and appropriately to the patient's concerns. "
                     + "If the response is adaptable and suitable for the patient's needs, consider it correct.";
         }
@@ -94,50 +93,14 @@ public class PracticeService {
                     })
                     .onErrorReturn(JsonNodeFactory.instance.objectNode().put("error", "Error occurred during request."));
 
-            String content = response.block().path("choices").get(0).path("message").path("content").asText();
-
-            // content를 JSON으로 파싱 및 검증
-            try {
-
-                // 1. 이상한 문자가 json 앞 뒤에 추가되는 것 파싱
-                // 2. 개행문자 제거 파싱
-
-                String contentStr = content;
-                if(contentStr.charAt(0) != '{') {
-                    contentStr = extractTextInBraces(contentStr);
-                }
-                JsonNode parsedContent = objectMapper.readTree(contentStr);
-                String parsedContentStr = parsedContent.toString();
-
-
-                // 검증 성공 시 content 반환
-                return parsedContentStr;
-
-            } catch (JsonProcessingException e) {
-                throw new IllegalArgumentException("Content is not a valid JSON", e);
-            }
+            String feedback = response.block().path("choices").get(0).path("message").path("content").asText();
+            return feedback;
 
         } catch (Exception e) {
             e.printStackTrace();
             return "Error occurred during request.";
         }
     }
-
-    private String extractTextInBraces(String parsedContentStr) {
-        Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
-        Matcher matcher = pattern.matcher(parsedContentStr);
-
-        // 중괄호 내부 문자열을 찾으면 반환
-        if (matcher.find()) {
-            return matcher.group(0);  // 중괄호 포함
-        } else {
-            return null;  // 중괄호가 없을 경우
-        }
-
-    }
-
-
-
 
     //API2. 질문 + 모범답안 생성 (연습모드)
     public String createQuestion(String requestBodyStr) {
