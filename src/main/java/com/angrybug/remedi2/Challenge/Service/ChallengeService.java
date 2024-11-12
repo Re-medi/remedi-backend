@@ -141,7 +141,7 @@ public class ChallengeService {
         //---------------------------------
 
         if (requestBodyStr == null) {
-            return "Error occurred during request.";
+            return "Error occurred during request.(null)";
         }
 
         String prompt = "You are tasked with evaluating a pharmacist's medication guidance simulation. "
@@ -171,20 +171,20 @@ public class ChallengeService {
                 + "{\n"
                 + "    \"score\": {\n"
                 + "        \"part_scores\": {\n"
-                + "            \"part1\": [score],\n"
-                + "            \"part2\": [score],\n"
-                + "            \"part3\": [score],\n"
-                + "            \"part4\": [score]\n"
+                + "            \"part1\": Integer,\n"
+                + "            \"part2\": Integer,\n"
+                + "            \"part3\": Integer,\n"
+                + "            \"part4\": Integer\n"
                 + "        },\n"
                 + "        \"criteria\": {\n"
-                + "            \"clarity\": [score],\n"
-                + "            \"relevance\": [score],\n"
-                + "            \"consistency\": [score],\n"
-                + "            \"delivery\": [score]\n"
+                + "            \"clarity\": Integer,\n"
+                + "            \"relevance\": Integer,\n"
+                + "            \"consistency\": Integer,\n"
+                + "            \"delivery\": Integer\n"
                 + "        }\n"
                 + "    }\n"
                 + "}\n\n"
-                + "Important: Ensure that the output contains only the JSON object above. Do not include any additional text, comments, or explanations outside of the JSON.\n\n"
+                + "Ensure that all scores are integers. Ensure that the output contains only the JSON object above. Do not include any additional text, comments, or explanations outside of the JSON.\n\n"
                 + "Here is the input data:\n"
                 + requestBodyStr;
 
@@ -216,7 +216,7 @@ public class ChallengeService {
                         System.err.println("Status Code: " + e.getStatusCode());
                         System.err.println("Response Body: " + e.getResponseBodyAsString());
                     })
-                    .onErrorReturn(JsonNodeFactory.instance.objectNode().put("error", "Error occurred during request."));
+                    .onErrorReturn(JsonNodeFactory.instance.objectNode().put("error", "Error occurred during request.(request)"));
 
 
             //----------------------------------------
@@ -262,7 +262,7 @@ public class ChallengeService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return "Error occurred during request.";
+            return "Error occurred during request.(final)";
         }
     }
 
