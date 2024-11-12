@@ -209,7 +209,7 @@ public class ChallengeService {
 
             //----------------------------------------
             log.info(String.valueOf(response));
-            log.info(String.valueOf(response.block()));
+//            log.info(String.valueOf(response.block()));
             //----------------------------------------
 
             String content = response.block().path("choices").get(0).path("message").path("content").asText();
