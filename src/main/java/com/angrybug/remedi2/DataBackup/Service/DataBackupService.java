@@ -65,19 +65,16 @@ public class DataBackupService {
         data.put("practiceId", savedResult.getPracticeId());
         data.put("result", savedResult.getResult());
 
+        String directoryPath = System.getProperty("user.home") + File.separator + "backupData";
         String fileName = "backupData----"+savedResult.getPracticeId() + ".json";
-
-
-        String filePath = fileName;
-
-
+        String filePath = directoryPath + File.separator + fileName;
 
         try {
-            // 디렉토리가 존재하지 않으면 생성
-//            Path dirPath = Paths.get(directoryPath);
-//            if (Files.notExists(dirPath)) {
-//                Files.createDirectories(dirPath);  // 디렉토리를 먼저 생성
-//            }
+            // 디렉터리가 존재하지 않으면 생성
+            Path dirPath = Paths.get(directoryPath);
+            if (Files.notExists(dirPath)) {
+                Files.createDirectories(dirPath);  // 디렉터리 생성
+            }
 
             // JSON 파일로 저장
             objectMapper.writeValue(new File(filePath), data);
