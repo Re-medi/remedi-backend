@@ -407,15 +407,16 @@ public class ChallengeService {
 
         String fileName = "scoreDetail----" + savedScore.getScoreId() + ".json";
 
-        String directoryPath = "../../../../../backupData/";
-        String filePath = directoryPath + fileName;
+//        String directoryPath = "../../../../../backupData/";
+//        String filePath = directoryPath + fileName;
+        String filePath = fileName;
 
         try {
             // 디렉토리가 존재하지 않으면 생성
-            Path dirPath = Paths.get(directoryPath);
-            if (Files.notExists(dirPath)) {
-                Files.createDirectories(dirPath);  // 디렉토리를 먼저 생성
-            }
+//            Path dirPath = Paths.get(directoryPath);
+//            if (Files.notExists(dirPath)) {
+//                Files.createDirectories(dirPath);  // 디렉토리를 먼저 생성
+//            }
 
             // JSON 파일로 저장
             objectMapper.writeValue(new File(filePath), data);
