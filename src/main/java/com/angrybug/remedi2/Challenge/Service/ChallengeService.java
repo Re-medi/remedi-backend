@@ -261,7 +261,7 @@ public class ChallengeService {
 
             //----------------------------------------
             log.info(String.valueOf(response));
-//            log.info(String.valueOf(response.block()));
+            log.info(String.valueOf(response.block()));
             //----------------------------------------
 
             String content = response.block().path("choices").get(0).path("message").path("content").asText();
@@ -288,7 +288,7 @@ public class ChallengeService {
                 score.setScoreDetail(parsedContentStr);
 
                 Score savedScore = challengeRepository.save(score); //DB에 저장
-//                saveLocalScoreDetail(savedScore); //local 파일에 저장
+                saveLocalScoreDetail(savedScore); //local 파일에 저장
 
                 //---------------------
 
