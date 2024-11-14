@@ -324,7 +324,7 @@ public class ChallengeService {
                 + "1. Highlight the pharmacist’s strengths, noting areas where the guidance was clear and effective.\n"
                 + "2. Identify any parts where additional clarification or improvement could benefit the patient.\n"
                 + "3. Reflect how well the guidance was tailored to the patient’s specific details, including age, gender, diagnosis, personality traits, and prescription.\n"
-                + "4. Be concise and written within 3 sentences, maintaining a natural, professional tone in Korean, addressing the pharmacist as ‘약사님’.\n"
+                + "4. Be concise and written within 4 sentences, maintaining a natural, professional tone in Korean, addressing the pharmacist as ‘약사님’.\n"
                 + "Return the feedback in the following format:\n"
                 + "{\n"
                 + "\"overview\" : \"<insert your concise evaluation here>\"\n"
