@@ -85,7 +85,7 @@ public class PracticeService {
 
         // 전체 요청 생성
         ObjectNode requestBody = objectMapper.createObjectNode();
-        requestBody.put("model", "gpt-4o-mini");
+        requestBody.put("model", "gpt-4o");
         requestBody.set("messages", objectMapper.createArrayNode().add(systemMessage).add(userMessage));
         requestBody.putObject("response_format").put("type", "json_object");
 
